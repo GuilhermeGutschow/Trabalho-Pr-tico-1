@@ -11,6 +11,10 @@ public class TypingApplication extends JFrame implements KeyListener {
 	private ArrayList <Box> horizontalBoxList = new ArrayList<Box> ();
 	private JTextArea textArea = new JTextArea (7,1);
 	
+	private boolean shiftBeingPressed = false;
+	private boolean controlBeingPressed = false;
+	private boolean capsPressed = false;
+	
 	public TypingApplication () {
 		super ("Typing Application");
 		
@@ -21,32 +25,87 @@ public class TypingApplication extends JFrame implements KeyListener {
 		SetButtonList ();
 		AddButtonsToBoxes();
 		
-		JPanel jPanel1 = new JPanel ();
+		/*JPanel jPanel1 = new JPanel ();
 		jPanel1.add(verticalBox);
 		add (jPanel1, BorderLayout.SOUTH);
+		*/
+		
+		add (verticalBox, BorderLayout.SOUTH);
 		
 		textArea.setEditable(false);
 		add (textArea, BorderLayout.CENTER);
 		
-		addKeyListener (this);
+		textArea.addKeyListener(this);
 	}
 	
 	@Override // trata pressionamento de qualquer tecla
 	public void keyPressed(KeyEvent event) {
-		System.out.println("a");
 		System.out.println(KeyEvent.getKeyText(event.getKeyCode()));
-		for (int i = 0; i < buttonList.size(); i ++) {
-			for (int j = 0; j < buttonList.get(i).size(); j ++ ) {
-				if (buttonList.get(i).get(j).equals(KeyEvent.getKeyText(event.getKeyCode()))){
-					System.out.println("Tecla pressionada");
+
+		boolean rightSymbol = false;
+		String symbol = KeyEvent.getKeyText(event.getKeyCode());
+		for (int i = 0; i < buttonList.size() && !rightSymbol; i ++) {
+			for (int j = 0; j < buttonList.get(i).size() && !rightSymbol; j ++ ) {
+				if (buttonList.get(i).get(j).equals(symbol)){
+					System.out.println("Tecla pressionada " + i + " " + j);
+					rightSymbol = true;
 				}
 			}
 		}
+		
+		boolean done = false;
+		
+		if (symbol == "Backspace") {
+			if (textArea.getText().length() != 0) {
+				textArea.setText(textArea.getText().substring(0,textArea.getText().length() - 1));
+			}
+			done = true;
+		} else if (symbol == "Shift") {
+			shiftBeingPressed = true;
+			done = true;
+		} else if (symbol == "Ctrl"){
+			controlBeingPressed = true;
+			done = true;
+		} else if (symbol == "Caps Lock") {
+			capsPressed = !capsPressed;
+			done = true;
+		} else if (symbol == "Enter") {
+			textArea.setText("");
+			done = true;
+		}
+		
+		else if (symbol == "Barra Invertida") {
+			symbol = "\\";
+		} else if (symbol == "Menos") {
+			symbol = "-";
+		} else if (symbol == "Igual") {
+			symbol = "=";
+			if (shiftBeingPressed) {
+				symbol = "+";
+			}
+		} else if (symbol == "Parêntese de Abertura") {
+			symbol = "[";
+		} else if (symbol == "Parêntese de Fechamento") {
+			symbol = "]";
+		} else if (symbol == "Espaço") {
+			symbol = " ";
+		}
+		if (!done) {
+			if ((!capsPressed && !shiftBeingPressed) || (shiftBeingPressed && capsPressed)) {
+				symbol = symbol.toLowerCase();
+			}
+			textArea.setText(textArea.getText() + symbol);
+		}
 	}
 
-	@Override // trata liberação de qualquer tecla
+	@Override
 	public void keyReleased(KeyEvent event) {
-		System.out.println("a");
+		String symbol = KeyEvent.getKeyText(event.getKeyCode());
+		if (symbol == "Shift") {
+			shiftBeingPressed = false;
+		} else if (symbol == "Ctrl") {
+			controlBeingPressed = false;
+		}
 	}
 
 	@Override
@@ -169,6 +228,9 @@ public class TypingApplication extends JFrame implements KeyListener {
 			fifthButtonLine.add(new JButton (fifthStringLine.get(i)));
 		}
 		
+		fifthButtonLine.get(0).setMinimumSize(new Dimension (200,30));
+		fifthButtonLine.get(0).setPreferredSize(new Dimension (200,30));
+		
 		buttonList.add(firstButtonLine);
 		buttonList.add(secondButtonLine);
 		buttonList.add(thirdButtonLine);
@@ -186,7 +248,7 @@ public class TypingApplication extends JFrame implements KeyListener {
 				if (i == 3 && j == buttonList.get(i).size() - 1) {
 					horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (10,0)));
 				} else if (i == 4 && j == 1) {
-					horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (10,0)));					
+					horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (100,0)));					
 				}
 				horizontalBoxList.get(i).add(buttonList.get(i).get(j));
 			}
