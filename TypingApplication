@@ -1,0 +1,200 @@
+import java.awt.*;
+import java.awt.event.*;
+import java.util.ArrayList;
+import javax.swing.*;
+
+
+public class TypingApplication extends JFrame implements KeyListener {
+	
+	private ArrayList <ArrayList <JButton>> buttonList = new ArrayList<ArrayList<JButton>> ();
+	private Box verticalBox;
+	private ArrayList <Box> horizontalBoxList = new ArrayList<Box> ();
+	
+	public TypingApplication () {
+		super ("Typing Application");
+		
+		BorderLayout borderLayout = new BorderLayout ();
+		setLayout (borderLayout);
+		
+		SetBoxes ();
+		SetButtonList ();
+		AddButtonsToBoxes();
+		
+		JPanel jPanel1 = new JPanel ();
+		jPanel1.add(verticalBox);
+		add (jPanel1, BorderLayout.SOUTH);
+		
+		addKeyListener (this);
+		
+		//add (verticalBox, BorderLayout.SOUTH);
+		//add (jPanel1, BorderLayout.SOUTH);
+	}
+	
+	@Override // trata pressionamento de qualquer tecla
+	public void keyPressed(KeyEvent event) {
+		System.out.println("a");
+		System.out.println(KeyEvent.getKeyText(event.getKeyCode()));
+		for (int i = 0; i < buttonList.size(); i ++) {
+			for (int j = 0; j < buttonList.get(i).size(); j ++ ) {
+				if (buttonList.get(i).get(j).equals(KeyEvent.getKeyText(event.getKeyCode()))){
+					System.out.println("Tecla pressionada");
+				}
+			}
+		}
+	}
+
+	@Override // trata liberação de qualquer tecla
+	public void keyReleased(KeyEvent event) {
+		System.out.println("a");
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+	}
+	
+	private void SetBoxes () {
+	
+		verticalBox = Box.createVerticalBox();
+		Box box1 = Box.createHorizontalBox(), box2 = Box.createHorizontalBox(), box3 = Box.createHorizontalBox(),
+				box4 = Box.createHorizontalBox(), box5 = Box.createHorizontalBox();
+		
+		horizontalBoxList.add(box1);
+		horizontalBoxList.add(box2);
+		horizontalBoxList.add(box3);
+		horizontalBoxList.add(box4);
+		horizontalBoxList.add(box5);
+
+		for (int i = 0; i < horizontalBoxList.size(); i ++) {
+			if (i != 0) {
+				verticalBox.add(Box.createRigidArea(new Dimension (0,2)));
+			}
+			verticalBox.add(horizontalBoxList.get(i));
+		}
+	}
+	
+	private void SetButtonList () {
+		ArrayList <JButton> firstButtonLine = new ArrayList<JButton> ();
+		ArrayList <JButton> secondButtonLine = new ArrayList<JButton> ();
+		ArrayList <JButton> thirdButtonLine = new ArrayList<JButton> ();
+		ArrayList <JButton> fourthButtonLine = new ArrayList<JButton> ();
+		ArrayList <JButton> fifthButtonLine = new ArrayList<JButton> ();
+
+		ArrayList <String> firstStringLine = new ArrayList <String> ();
+		ArrayList <String> secondStringLine = new ArrayList <String> ();
+		ArrayList <String> thirdStringLine = new ArrayList <String> ();
+		ArrayList <String> fourthStringLine = new ArrayList <String> ();
+		ArrayList <String> fifthStringLine = new ArrayList <String> ();
+ 
+		firstStringLine.add("-");
+		firstStringLine.add("1");
+		firstStringLine.add("2");
+		firstStringLine.add("3");
+		firstStringLine.add("4");
+		firstStringLine.add("5");
+		firstStringLine.add("6");
+		firstStringLine.add("7");
+		firstStringLine.add("8");
+		firstStringLine.add("9");
+		firstStringLine.add("0");
+		firstStringLine.add("-");
+		firstStringLine.add("+");
+		firstStringLine.add("Backspace");
+
+		for (int i = 0; i < firstStringLine.size(); i++){
+			firstButtonLine.add(new JButton (firstStringLine.get(i)));
+		}
+		
+		secondStringLine.add("Tab");
+		secondStringLine.add("Q");
+		secondStringLine.add("W");
+		secondStringLine.add("E");
+		secondStringLine.add("R");
+		secondStringLine.add("T");
+		secondStringLine.add("Y");
+		secondStringLine.add("U");
+		secondStringLine.add("I");
+		secondStringLine.add("O");
+		secondStringLine.add("P");
+		secondStringLine.add("[");
+		secondStringLine.add("]");
+		secondStringLine.add("/");
+		
+		for (int i = 0; i < secondStringLine.size(); i++){
+			secondButtonLine.add(new JButton (secondStringLine.get(i)));
+		}
+
+		thirdStringLine.add("Caps");
+		thirdStringLine.add("A");
+		thirdStringLine.add("S");
+		thirdStringLine.add("D");
+		thirdStringLine.add("F");
+		thirdStringLine.add("G");
+		thirdStringLine.add("H");
+		thirdStringLine.add("J");
+		thirdStringLine.add("K");
+		thirdStringLine.add("L");
+		thirdStringLine.add(":");
+		thirdStringLine.add("*");
+		thirdStringLine.add("Enter");
+		
+		for (int i = 0; i < thirdStringLine.size(); i++){
+			thirdButtonLine.add(new JButton (thirdStringLine.get(i)));
+		}
+
+		fourthStringLine.add("Shift");
+		fourthStringLine.add("Z");
+		fourthStringLine.add("X");
+		fourthStringLine.add("C");
+		fourthStringLine.add("V");
+		fourthStringLine.add("B");
+		fourthStringLine.add("N");
+		fourthStringLine.add("M");
+		fourthStringLine.add(",");
+		fourthStringLine.add(".");
+		fourthStringLine.add("?");
+		fourthStringLine.add("^");
+		
+		for (int i = 0; i < fourthStringLine.size(); i++){
+			fourthButtonLine.add(new JButton (fourthStringLine.get(i)));
+		}
+		
+		fifthStringLine.add(" ");
+		fifthStringLine.add("<");
+		fifthStringLine.add("v");
+		fifthStringLine.add(">");
+		
+		for (int i = 0; i < fifthStringLine.size(); i++){
+			fifthButtonLine.add(new JButton (fifthStringLine.get(i)));
+		}
+		
+		buttonList.add(firstButtonLine);
+		buttonList.add(secondButtonLine);
+		buttonList.add(thirdButtonLine);
+		buttonList.add(fourthButtonLine);
+		buttonList.add(fifthButtonLine);
+	}
+	
+	private void AddButtonsToBoxes () {
+		for (int i = 0; i < buttonList.size(); i ++) {
+			if (i==4) {
+				horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (50,0)));
+			}
+			for (int j = 0; j < buttonList.get(i).size(); j ++) {
+				horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (2,0)));
+				if (i == 3 && j == buttonList.get(i).size() - 1) {
+					horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (10,0)));
+				} else if (i == 4 && j == 1) {
+					horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (10,0)));					
+				}
+				horizontalBoxList.get(i).add(buttonList.get(i).get(j));
+			}
+		}
+	}
+
+	public static void main (String args []) {
+		TypingApplication typingApplication = new TypingApplication ();
+		typingApplication.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		typingApplication.setSize(400, 300);
+		typingApplication.setVisible(true);
+	}	
+}
