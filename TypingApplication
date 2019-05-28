@@ -9,6 +9,7 @@ public class TypingApplication extends JFrame implements KeyListener {
 	private ArrayList <ArrayList <JButton>> buttonList = new ArrayList<ArrayList<JButton>> ();
 	private Box verticalBox;
 	private ArrayList <Box> horizontalBoxList = new ArrayList<Box> ();
+	private JTextArea textArea = new JTextArea (7,1);
 	
 	public TypingApplication () {
 		super ("Typing Application");
@@ -24,10 +25,10 @@ public class TypingApplication extends JFrame implements KeyListener {
 		jPanel1.add(verticalBox);
 		add (jPanel1, BorderLayout.SOUTH);
 		
-		addKeyListener (this);
+		textArea.setEditable(false);
+		add (textArea, BorderLayout.CENTER);
 		
-		//add (verticalBox, BorderLayout.SOUTH);
-		//add (jPanel1, BorderLayout.SOUTH);
+		addKeyListener (this);
 	}
 	
 	@Override // trata pressionamento de qualquer tecla
@@ -111,13 +112,14 @@ public class TypingApplication extends JFrame implements KeyListener {
 		secondStringLine.add("R");
 		secondStringLine.add("T");
 		secondStringLine.add("Y");
+		
 		secondStringLine.add("U");
 		secondStringLine.add("I");
 		secondStringLine.add("O");
 		secondStringLine.add("P");
 		secondStringLine.add("[");
 		secondStringLine.add("]");
-		secondStringLine.add("/");
+		secondStringLine.add("\\");
 		
 		for (int i = 0; i < secondStringLine.size(); i++){
 			secondButtonLine.add(new JButton (secondStringLine.get(i)));
