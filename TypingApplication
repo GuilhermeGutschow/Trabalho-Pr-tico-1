@@ -10,14 +10,15 @@ public class TypingApplication extends JFrame implements KeyListener {
 	private Box verticalBox;
 	private ArrayList <Box> horizontalBoxList = new ArrayList<Box> ();
 	private JTextArea textArea = new JTextArea (7,1);
+	private Color initialButtonColor = Color.WHITE;
+	private ArrayList <String> textHistory = new ArrayList <String> ();
 	
 	private boolean shiftBeingPressed = false;
-	private boolean controlBeingPressed = false;
 	private boolean capsPressed = false;
 	
 	public TypingApplication () {
 		super ("Typing Application");
-		
+		textArea.setFocusTraversalKeysEnabled(false);
 		BorderLayout borderLayout = new BorderLayout ();
 		setLayout (borderLayout);
 		
@@ -40,19 +41,101 @@ public class TypingApplication extends JFrame implements KeyListener {
 	
 	@Override // trata pressionamento de qualquer tecla
 	public void keyPressed(KeyEvent event) {
-		System.out.println(KeyEvent.getKeyText(event.getKeyCode()));
-
+		
+		String keyText = KeyEvent.getKeyText(event.getKeyCode());
+		
+		System.out.println(keyText);
+		
+		keyText = GetRightKeyText (keyText);
+		if (keyText != null) {
+			ChangeColor (keyText, true);
+			Write (keyText);
+		}
+	}
+	
+	@Override
+	public void keyReleased(KeyEvent event) {
+		String keyText = KeyEvent.getKeyText(event.getKeyCode());
+		if (keyText == "Shift") {
+			shiftBeingPressed = false;
+		}
+		ChangeColor (GetRightKeyText (keyText), false);
+	}
+	
+	private String GetRightKeyText (String keyText) {
+		
+		if (keyText == "Caps Lock") {
+			keyText = "Caps";
+		} else if (keyText == "Barra Invertida") {
+			keyText = "\\";
+		} else if (keyText == "Menos") {
+			keyText = "-";
+		} else if (keyText == "Igual") {
+			keyText = "+";
+		} else if (keyText == "Parêntese de Abertura") {
+			keyText = "[";
+		} else if (keyText == "Parêntese de Fechamento") {
+			keyText = "]";
+		}  else if (keyText == "Acima") {
+			keyText = "^";
+		}  else if (keyText == "Esquerda") {
+			keyText = "<";
+		}  else if (keyText == "Abaixo") {
+			keyText = "v";
+		}  else if (keyText == "Direita") {
+			keyText = ">";
+		}  else if (keyText == "Espaço") {
+			keyText = " ";
+		}  else if (keyText == "Vírgula") {
+			keyText = ",";
+		}  else if (keyText == "Ponto Final") {
+			keyText = ".";
+		}  else if (keyText == "Ponto-e-Vírgula") {
+			keyText = ":";
+		}  else if (keyText == "Guia") {
+			keyText = "Tab";
+		} 
+		
 		boolean rightSymbol = false;
-		String symbol = KeyEvent.getKeyText(event.getKeyCode());
+		
 		for (int i = 0; i < buttonList.size() && !rightSymbol; i ++) {
 			for (int j = 0; j < buttonList.get(i).size() && !rightSymbol; j ++ ) {
-				if (buttonList.get(i).get(j).equals(symbol)){
-					System.out.println("Tecla pressionada " + i + " " + j);
+				if (buttonList.get(i).get(j).getActionCommand().equals(keyText)){
 					rightSymbol = true;
 				}
 			}
 		}
+		if (rightSymbol) {
+			return (keyText);
+		}
+		return (null);
+	}
+	
+	private void ChangeColor (String keyText, boolean turnOrange) {
+		Color color = initialButtonColor;
+		if (turnOrange) {
+			color = Color.ORANGE;
+		}
 		
+		boolean rightSymbol = false;
+		int [] symbolPosition = new int [2];
+		
+		for (int i = 0; i < buttonList.size() && !rightSymbol; i ++) {
+			for (int j = 0; j < buttonList.get(i).size() && !rightSymbol; j ++ ) {
+				if (buttonList.get(i).get(j).getActionCommand().equals(keyText)){
+					symbolPosition = new int [] {i,j};
+					rightSymbol = true;
+				}
+			}
+		}
+		//Classe diamensoes.
+		if (rightSymbol) {
+			buttonList.get(symbolPosition[0]).get(symbolPosition[1]).setBackground(color);;
+		}
+	}
+	
+	private void Write (String symbol) {
+
 		boolean done = false;
 		
 		if (symbol == "Backspace") {
@@ -64,47 +147,23 @@ public class TypingApplication extends JFrame implements KeyListener {
 			shiftBeingPressed = true;
 			done = true;
 		} else if (symbol == "Ctrl"){
-			controlBeingPressed = true;
 			done = true;
-		} else if (symbol == "Caps Lock") {
+		} else if (symbol == "Caps") {
 			capsPressed = !capsPressed;
 			done = true;
 		} else if (symbol == "Enter") {
+			textHistory.add(textArea.getText());
 			textArea.setText("");
 			done = true;
+		} else if (symbol == "Tab") {
+			symbol = "   ";
 		}
 		
-		else if (symbol == "Barra Invertida") {
-			symbol = "\\";
-		} else if (symbol == "Menos") {
-			symbol = "-";
-		} else if (symbol == "Igual") {
-			symbol = "=";
-			if (shiftBeingPressed) {
-				symbol = "+";
-			}
-		} else if (symbol == "Parêntese de Abertura") {
-			symbol = "[";
-		} else if (symbol == "Parêntese de Fechamento") {
-			symbol = "]";
-		} else if (symbol == "Espaço") {
-			symbol = " ";
-		}
 		if (!done) {
 			if ((!capsPressed && !shiftBeingPressed) || (shiftBeingPressed && capsPressed)) {
 				symbol = symbol.toLowerCase();
 			}
 			textArea.setText(textArea.getText() + symbol);
-		}
-	}
-
-	@Override
-	public void keyReleased(KeyEvent event) {
-		String symbol = KeyEvent.getKeyText(event.getKeyCode());
-		if (symbol == "Shift") {
-			shiftBeingPressed = false;
-		} else if (symbol == "Ctrl") {
-			controlBeingPressed = false;
 		}
 	}
 
@@ -145,7 +204,7 @@ public class TypingApplication extends JFrame implements KeyListener {
 		ArrayList <String> fourthStringLine = new ArrayList <String> ();
 		ArrayList <String> fifthStringLine = new ArrayList <String> ();
  
-		firstStringLine.add("-");
+		firstStringLine.add("~");
 		firstStringLine.add("1");
 		firstStringLine.add("2");
 		firstStringLine.add("3");
@@ -163,6 +222,8 @@ public class TypingApplication extends JFrame implements KeyListener {
 		for (int i = 0; i < firstStringLine.size(); i++){
 			firstButtonLine.add(new JButton (firstStringLine.get(i)));
 		}
+		
+		initialButtonColor = firstButtonLine.get(0).getBackground();
 		
 		secondStringLine.add("Tab");
 		secondStringLine.add("Q");
@@ -228,8 +289,8 @@ public class TypingApplication extends JFrame implements KeyListener {
 			fifthButtonLine.add(new JButton (fifthStringLine.get(i)));
 		}
 		
-		fifthButtonLine.get(0).setMinimumSize(new Dimension (200,30));
-		fifthButtonLine.get(0).setPreferredSize(new Dimension (200,30));
+		//fifthButtonLine.get(0).setMinimumSize(new Dimension (50,2));
+		 //fifthButtonLine.get(0).setPreferredSize(new Dimension (50,2));
 		
 		buttonList.add(firstButtonLine);
 		buttonList.add(secondButtonLine);
@@ -248,6 +309,8 @@ public class TypingApplication extends JFrame implements KeyListener {
 				if (i == 3 && j == buttonList.get(i).size() - 1) {
 					horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (10,0)));
 				} else if (i == 4 && j == 1) {
+					horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (10,0)));					
+				} else if (i == 4 && j == 3) {
 					horizontalBoxList.get(i).add(Box.createRigidArea(new Dimension (100,0)));					
 				}
 				horizontalBoxList.get(i).add(buttonList.get(i).get(j));
@@ -258,7 +321,7 @@ public class TypingApplication extends JFrame implements KeyListener {
 	public static void main (String args []) {
 		TypingApplication typingApplication = new TypingApplication ();
 		typingApplication.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		typingApplication.setSize(400, 300);
+		typingApplication.setSize(750, 300);
 		typingApplication.setVisible(true);
 	}	
 }
