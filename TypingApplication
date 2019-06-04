@@ -7,49 +7,59 @@ import javax.swing.*;
 public class TypingApplication extends JFrame implements KeyListener {
 	
 	private ArrayList <ArrayList <JButton>> buttonList = new ArrayList<ArrayList<JButton>> ();
-	private Box verticalBox;
+	private Box verticalBox, textBox;
 	private ArrayList <Box> horizontalBoxList = new ArrayList<Box> ();
 	private JTextArea textArea = new JTextArea (7,1);
+	private JTextArea pangramaTextArea = new JTextArea (1,1);
 	private Color initialButtonColor = Color.WHITE;
-	private ArrayList <String> textHistory = new ArrayList <String> ();
+	private JMenu historyMenu;
 	
 	private boolean shiftBeingPressed = false;
 	private boolean capsPressed = false;
 	
+	private String currentPangrama;
+	private boolean pangramaBeingUsed = false;
+	private int erros = 0;
+	private int acertos = 0;
+	
+	private JDesktopPane desktopPane;
+	
 	public TypingApplication () {
 		super ("Typing Application");
-		textArea.setFocusTraversalKeysEnabled(false);
-		BorderLayout borderLayout = new BorderLayout ();
-		setLayout (borderLayout);
 		
+		SetDesktopPane();
+		SetTextAreas();
 		SetBoxes ();
 		SetButtonList ();
 		AddButtonsToBoxes();
 		
-		/*JPanel jPanel1 = new JPanel ();
-		jPanel1.add(verticalBox);
-		add (jPanel1, BorderLayout.SOUTH);
-		*/
+		BorderLayout borderLayout = new BorderLayout ();
+		setLayout (borderLayout);
 		
+		add (textBox, BorderLayout.CENTER);
 		add (verticalBox, BorderLayout.SOUTH);
-		
-		textArea.setEditable(false);
-		add (textArea, BorderLayout.CENTER);
 		
 		textArea.addKeyListener(this);
 	}
 	
-	@Override // trata pressionamento de qualquer tecla
+	@Override
 	public void keyPressed(KeyEvent event) {
 		
 		String keyText = KeyEvent.getKeyText(event.getKeyCode());
-		
-		System.out.println(keyText);
-		
+
 		keyText = GetRightKeyText (keyText);
 		if (keyText != null) {
 			ChangeColor (keyText, true);
 			Write (keyText);
+			if (pangramaBeingUsed) {
+				CheckPangrama (keyText);
+			}
+		} else {
+			try {
+				throw new Exception ();
+			} catch (Exception exception) {
+				ShowException();
+			}
 		}
 	}
 	
@@ -66,35 +76,41 @@ public class TypingApplication extends JFrame implements KeyListener {
 		
 		if (keyText == "Caps Lock") {
 			keyText = "Caps";
-		} else if (keyText == "Barra Invertida") {
+		} else if (keyText == "Barra Invertida" || keyText == "Back Slash") {
 			keyText = "\\";
-		} else if (keyText == "Menos") {
+		} else if (keyText == "Menos" || keyText == "Minus") {
 			keyText = "-";
-		} else if (keyText == "Igual") {
+		} else if (keyText == "Igual" || keyText == "Equals") {
 			keyText = "+";
-		} else if (keyText == "Parêntese de Abertura") {
+		} else if (keyText == "Parêntese de Abertura" || keyText == "Open Bracket") {
 			keyText = "[";
-		} else if (keyText == "Parêntese de Fechamento") {
+		} else if (keyText == "Parêntese de Fechamento" || keyText == "Close Bracket") {
 			keyText = "]";
-		}  else if (keyText == "Acima") {
+		}  else if (keyText == "Acima" || keyText == "Up") {
 			keyText = "^";
-		}  else if (keyText == "Esquerda") {
+		}  else if (keyText == "Esquerda" || keyText == "Left") {
 			keyText = "<";
-		}  else if (keyText == "Abaixo") {
+		}  else if (keyText == "Abaixo" || keyText == "Down") {
 			keyText = "v";
-		}  else if (keyText == "Direita") {
+		}  else if (keyText == "Direita" || keyText == "Right") {
 			keyText = ">";
-		}  else if (keyText == "Espaço") {
+		}  else if (keyText == "Espaço" || keyText == "Space") {
 			keyText = " ";
-		}  else if (keyText == "Vírgula") {
+		}  else if (keyText == "Vírgula" || keyText == "Comma") {
 			keyText = ",";
-		}  else if (keyText == "Ponto Final") {
+		}  else if (keyText == "Ponto Final" || keyText == "Period") {
 			keyText = ".";
-		}  else if (keyText == "Ponto-e-Vírgula") {
+		}  else if (keyText == "Ponto-e-Vírgula" || keyText == "Semicolon") {
 			keyText = ":";
 		}  else if (keyText == "Guia") {
 			keyText = "Tab";
-		} 
+		}  else if (keyText == "Til" || keyText == "Dead Tilde") {
+			keyText = "~";
+		} else if (keyText.equals("Desconhecido keyCode: 0x0") || keyText.equals("Unknown keyCode: 0x0")) {
+			keyText = "?";
+		} else if (shiftBeingPressed && keyText.equals("8")) {
+			keyText = "*";
+		}
 		
 		boolean rightSymbol = false;
 		
@@ -128,7 +144,6 @@ public class TypingApplication extends JFrame implements KeyListener {
 				}
 			}
 		}
-		//Classe diamensoes.
 		if (rightSymbol) {
 			buttonList.get(symbolPosition[0]).get(symbolPosition[1]).setBackground(color);;
 		}
@@ -146,14 +161,14 @@ public class TypingApplication extends JFrame implements KeyListener {
 		} else if (symbol == "Shift") {
 			shiftBeingPressed = true;
 			done = true;
-		} else if (symbol == "Ctrl"){
-			done = true;
 		} else if (symbol == "Caps") {
 			capsPressed = !capsPressed;
 			done = true;
 		} else if (symbol == "Enter") {
-			textHistory.add(textArea.getText());
-			textArea.setText("");
+			if (!pangramaBeingUsed) {
+				AddToHistoryMenu (textArea.getText());
+				textArea.setText("");
+			}
 			done = true;
 		} else if (symbol == "Tab") {
 			symbol = "   ";
@@ -165,6 +180,58 @@ public class TypingApplication extends JFrame implements KeyListener {
 			}
 			textArea.setText(textArea.getText() + symbol);
 		}
+	}
+	
+	private void CheckPangrama (String keyText) {
+		int size = textArea.getText().length();
+		if (keyText == "Backspace") {
+			if (textArea.getText().regionMatches(0, currentPangrama, 0, size)) {
+			}
+			return;
+		} if (keyText == "Enter") {
+			EndUsageOfPangrama ();
+			ChangeColor ("Enter", false);
+			return;
+		} if (keyText == "Shift" || keyText == "Control" || keyText == "Caps") {
+			return;
+		}
+		
+		if (textArea.getText().regionMatches(size-1, currentPangrama, size-1, 1)) {
+			if (acertos < size) {
+				acertos++;
+			}
+		} else {
+			erros++;
+		}
+	}
+	
+	private void EndUsageOfPangrama () {
+		JFrame pangramaJFrame = new JFrame ("Results");
+		JLabel pangramaJLabel = new JLabel ();
+		String firstText;
+		if (textArea.getText().equals(currentPangrama)) {
+			firstText = "A frase foi digitada corretamente.";
+		} else {
+			firstText = "A frase não foi digitada corretamente.";
+		}
+		pangramaJLabel.setText("<html>" + firstText + "<br/>Erros: " + erros + "<br/>Acertos: " + acertos + "</html>");
+		pangramaJFrame.add(pangramaJLabel);
+		pangramaJFrame.setSize (250,150);
+		pangramaJFrame.setVisible(true);
+		pangramaJFrame.setLocation(600, 100);
+		
+		acertos = 0;
+		erros = 0;
+		SetPangrama ("Teste sua habilidade escolhendo um pangrama.");
+	}
+	
+	private void ShowException () {
+		JFrame exceptionJFrame = new JFrame ("Exception");
+		JLabel exceptionJLabel = new JLabel ("Tecla inválida.");
+		exceptionJFrame.add(exceptionJLabel);
+		exceptionJFrame.setSize (200,100);
+		exceptionJFrame.setVisible(true);
+		exceptionJFrame.setLocation(150, 70);
 	}
 
 	@Override
@@ -189,6 +256,92 @@ public class TypingApplication extends JFrame implements KeyListener {
 			}
 			verticalBox.add(horizontalBoxList.get(i));
 		}
+		
+		textBox = Box.createVerticalBox();
+		textBox.add(textArea);
+		textBox.add(pangramaTextArea);
+	}
+	
+	private void SetDesktopPane () {
+		desktopPane = new JDesktopPane();
+		add(desktopPane); 
+
+		JMenuBar bar = new JMenuBar();
+		setJMenuBar(bar);
+		JMenu pangramaMenu = new JMenu("Teste Pangrama");
+		ArrayList <JMenuItem> frames = new ArrayList <JMenuItem> ();
+
+		bar.add(pangramaMenu);
+		
+		frames.add(new JMenuItem("Um pequeno jabuti xereta viu dez cegonhas felizes"));
+		frames.add(new JMenuItem("Quem traz CD, LP, fax, engov e whisky JB?"));
+		frames.add(new JMenuItem("Gazeta publica hoje breve nota de faxina na quermesse."));
+		frames.add(new JMenuItem("Jovem craque belga prediz falhas no xote."));
+		frames.add(new JMenuItem("Bancos futeis pagavam-lhe queijo, whisky e xadrez."));
+		
+		for (int i = 0; i < frames.size(); i ++) {
+			JMenuItem frame = frames.get(i);
+			pangramaMenu.add(frame);
+			frame.addActionListener(new ActionListener(){
+					public void actionPerformed(ActionEvent e) {
+						SetPangrama (frame.getText());
+					}
+				}
+			);
+		}
+		
+		JMenuItem resetFrame = new JMenuItem ("Reset");
+		
+		pangramaMenu.add(resetFrame);
+		
+		resetFrame.addActionListener(new ActionListener() {
+				public void actionPerformed (ActionEvent e) {
+					SetPangrama ("Teste sua habilidade escolhendo um pangrama.");
+				}
+			}
+		);
+		
+		historyMenu = new JMenu ("Histórico");
+		bar.add(historyMenu);
+	}
+	
+	private void SetPangrama (String pangrama) {
+		pangramaTextArea.setText(pangrama);
+		if (pangrama != "Teste sua habilidade escolhendo um pangrama.") {
+			currentPangrama = pangrama;
+			pangramaBeingUsed = true;
+			acertos = 0;
+			erros = 0;
+			
+			AddToHistoryMenu (textArea.getText());
+			textArea.setText("");
+		} else {
+			pangramaBeingUsed = false;
+		}
+	}
+	
+	private void AddToHistoryMenu (String text) {
+		JMenuItem newJMenuItem = new JMenuItem (text);
+		historyMenu.add(newJMenuItem, 0);
+		newJMenuItem.addActionListener(new ActionListener(){
+				public void actionPerformed (ActionEvent e) {
+					if (!pangramaBeingUsed) {
+						textArea.setText(newJMenuItem.getText());
+					}
+				}
+			}
+		);
+	}
+	
+	
+	private void SetTextAreas () {
+		textArea.setFocusTraversalKeysEnabled(false);
+		textArea.setEditable(false);
+		textArea.setLineWrap(true);
+		
+		pangramaTextArea.setEditable(false);
+		pangramaTextArea.setLineWrap(true);
+		pangramaTextArea.setText("Teste sua habilidade escolhendo um pangrama.");
 	}
 	
 	private void SetButtonList () {
